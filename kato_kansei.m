@@ -2,6 +2,13 @@
 %Power system stability analysis with Runge\Kutta method
 %ダンピングあり
 close all;
+
+prompt = {'k'};
+title = ' k の値は？';
+numlines = 1;  % 1行分の入力欄
+Answer = inputdlg(prompt, title, numlines);
+alpha = 1.0002 + (str2double(Answer{1})/100000);
+
 x=zeros(2,4);%状態変数を表す2次元ベクトルの定義
              %x1:δ[rad]
              %x2:w[rad/s]
@@ -20,13 +27,6 @@ tc=0.20;%故障継続時間
 
 ts=6.0;%自己開始時間
 
-
-%回路定数
-%L=0.1;
-%C=0.001;
-%R=10.0;
-%e0=100.0;
-%f0=50.0;
 A_pre=1.588;
 A_in=0.0;
 A_past=1.588;
@@ -46,9 +46,8 @@ while t<=tend
     
     outvar(it,1)=tc;
     outvar(it,2)=t;%出力用配列outvarの1列目に時刻tを代入
-   
-        outvar(it,3)=x(1,1)*180/pi;%出力用配列outvarの2,3列目にx1,x2を代入
-        outvar(it,4)=x(2,1)/(2*pi);
+    outvar(it,3)=x(1,1)*180/pi;%出力用配列outvarの2,3列目にx1,x2を代入
+    outvar(it,4)=x(2,1)/(2*pi);
    
     
     %ルンゲクッタ法による微分方程式の数値計算
@@ -63,7 +62,7 @@ while t<=tend
         
     elseif tc+ts<t     %事故除去後
         
-    Pm=Pm*1.0008;%1.1で発散    
+    Pm=Pm * alpha;%1.1で発散    
         
     a(1,2)=1.0;
     a(2,1)=-A/M;
@@ -120,12 +119,6 @@ while t<=tend
     end
    
 end
-%出力配列用outvarをエクセルファイルへ書き込む
-xlswrite('output_data_kato',outvar,1,'P1');
-
-
-
-
 
 f1 = figure('Name','Phaze','NumberTitle','off');
 h = animatedline;
